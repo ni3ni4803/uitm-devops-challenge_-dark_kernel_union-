@@ -1,0 +1,65 @@
+name: rentverse_mobile
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' 
+
+# The following defines the version and build number for your application.
+# ... (version and environment block remains the same)
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.0.0 # Adjusted for broader compatibility, as 3.10.3 is currently future-dated
+
+# Dependencies specify other packages that your package needs in order to work.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+
+  # --------------------------------------------------------------------
+  # RENTVERSE CORE DEPENDENCIES
+  # --------------------------------------------------------------------
+
+  # 1. STATE MANAGEMENT (RIVERPOD - Type-safe state management)
+  flutter_riverpod: ^2.5.1
+  
+  # 2. DATA MODELING & SERIALIZATION (FREEZED/JSON - Immutable models)
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.9.0
+
+  # 3. API CALLS (DIO - Robust HTTP client)
+  dio: ^5.4.3 
+
+  # 4. ROUTING (GOROUTER - For clear, declarative navigation)
+  go_router: ^14.0.0 
+
+  # --- NEW ---
+  shared_preferences: ^2.2.3
+
+  google_maps_flutter: ^2.6.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. 
+  flutter_lints: ^6.0.0
+
+  # --------------------------------------------------------------------
+  # CODE GENERATION TOOLS (REQUIRED for Freezed/JSON)
+  # --------------------------------------------------------------------
+  
+  # Required to run the code generation for Freezed/JSON Serialization
+  build_runner: ^2.4.9
+  freezed: ^2.5.2
+  json_serializable: ^6.8.0 
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# ... (rest of the file remains the same)
