@@ -51,6 +51,10 @@ model User {
   updatedAt        DateTime          @updatedAt
   verifiedAt       DateTime?
   
+  // --- MODULE 1: SECURE LOGIN & MFA ---
+  mfaEnabled       Boolean           @default(false)
+  mfaSecret        String?           // Stores the MFA secret key (e.g., base32 for Google Authenticator)
+
   // OAuth IDs
   googleId         String?           @unique
   facebookId       String?           @unique
@@ -228,6 +232,12 @@ model RentalAgreement {
   publicId    String?  // Cloudinary public ID untuk delete
   fileName    String?  // Nama file untuk display
   fileSize    Int?     // Size dalam bytes
+
+  // --- MODULE 3: DIGITAL AGREEMENT ---
+  contentHash String?  // SHA-256 hash of the agreement content for integrity check
+  signature   String?  // Cryptographic signature or HMAC
+  signedAt    DateTime? // Timestamp when the user digitally signed
+  
   generatedAt DateTime @default(now())
   lease       Lease    @relation(fields: [leaseId], references: [id], onDelete: Cascade)
 
