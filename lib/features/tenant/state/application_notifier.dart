@@ -1,34 +1,83 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rentverse_mobile/features/tenant/models/rental_application.dart';
+import 'package:flutter/foundation.dart';
 
-// 1. Notifier to manage the multi-step form state
+// Notifier to manage the multi-step form state
 class ApplicationNotifier extends StateNotifier<RentalApplication> {
   ApplicationNotifier(String propertyId)
       : super(RentalApplication(propertyId: propertyId));
 
-  // Updates the application data with partial information
-  void updateApplication(RentalApplication newApplicationData) {
-    state = newApplicationData;
+  // === Step 1: Personal Info ===
+  void updatePersonalInfo({
+    required String fullName,
+    required String email,
+    required String phone,
+    required String driverLicenseNumber,
+    required String dateOfBirth, // Added to match model
+  }) {
+    state = state.copyWith(
+      fullName: fullName,
+      email: email,
+      phone: phone,
+      driverLicenseNumber: driverLicenseNumber,
+      dateOfBirth: dateOfBirth,
+    );
   }
 
-  // Simulates submitting the final application
-  Future<void> submitApplication() async {
-    // In a real app, this would call an API with the entire 'state' object
-    await Future.delayed(const Duration(milliseconds: 1000));
-    
-    // For demonstration, we just log the submission
-    print('Application Submitted for Property ${state.propertyId}:');
-    print(state.toJson());
+  // === Step 2: Financial Info ===
+  void updateFinancialInfo({
+    required double currentMonthlyIncome,
+    required String employerName,
+    required String employerPhone,
+    required String employmentDuration, // Added to match model
+  }) {
+    state = state.copyWith(
+      currentMonthlyIncome: currentMonthlyIncome,
+      employerName: employerName,
+      employerPhone: employerPhone,
+      employmentDuration: employmentDuration,
+    );
   }
 
-  // Resets the state for a new application
-  void reset(String newPropertyId) {
-    state = RentalApplication(propertyId: newPropertyId);
+  // === Step 3: Residence History ===
+  void updateResidenceHistory({
+    required String currentAddress,
+    required String currentLandlordName,
+    required String currentLandlordPhone,
+  }) {
+    state = state.copyWith(
+      currentAddress: currentAddress,
+      currentLandlordName: currentLandlordName,
+      currentLandlordPhone: currentLandlordPhone,
+    );
+  }
+
+  // === Submission ===
+  Future<bool> submitApplication() async {
+    try {
+      // Simulate API call delay
+      await Future.delayed(const Duration(milliseconds: 1500));
+
+      debugPrint('Finalizing application for property: ${state.propertyId}');
+
+      // 🚨 CRITICAL: Set isSubmitted to true so UI can show success screen
+      state = state.copyWith(isSubmitted: true);
+
+      return true;
+    } catch (e) {
+      debugPrint('Submission Error: $e');
+      return false;
+    }
+  }
+
+  // === Explicit reset ===
+  void resetApplication() {
+    state = RentalApplication(propertyId: state.propertyId);
   }
 }
 
-// 2. The Application Provider (needs to be instantiated with the property ID)
-// This provider is designed to be overridden when entering the application flow.
-final applicationNotifierProvider = StateNotifierProvider.family<ApplicationNotifier, RentalApplication, String>(
+// Provider utilizing .family to keep property-specific state
+final applicationNotifierProvider =
+    StateNotifierProvider.family<ApplicationNotifier, RentalApplication, String>(
   (ref, propertyId) => ApplicationNotifier(propertyId),
 );

@@ -12,7 +12,7 @@ class Property with _$Property {
     required double latitude,
     required double longitude,
     required int bedrooms,
-    required int bathrooms,
+    required double bathrooms,
     required double monthlyRent,
     @JsonKey(name: 'image_urls') @Default([]) List<String> imageUrls, 
     String? description, 

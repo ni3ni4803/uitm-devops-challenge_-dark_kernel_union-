@@ -14,7 +14,7 @@ _$PropertyImpl _$$PropertyImplFromJson(Map<String, dynamic> json) =>
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       bedrooms: (json['bedrooms'] as num).toInt(),
-      bathrooms: (json['bathrooms'] as num).toInt(),
+      bathrooms: (json['bathrooms'] as num).toDouble(),
       monthlyRent: (json['monthlyRent'] as num).toDouble(),
       imageUrls: (json['image_urls'] as List<dynamic>?)
               ?.map((e) => e as String)

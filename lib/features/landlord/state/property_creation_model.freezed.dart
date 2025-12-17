@@ -17,13 +17,13 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$PropertyCreationModel {
 // Step 1: Basic Info
+  String? get id => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
   String get address => throw _privateConstructorUsedError;
-  double get monthlyRent => throw _privateConstructorUsedError;
-  String? get id =>
+  double get monthlyRent =>
       throw _privateConstructorUsedError; // Step 2: Details & Location
   int get bedrooms => throw _privateConstructorUsedError;
-  int get bathrooms => throw _privateConstructorUsedError;
+  double get bathrooms => throw _privateConstructorUsedError;
   List<String> get amenities => throw _privateConstructorUsedError;
   double get latitude =>
       throw _privateConstructorUsedError; // Defaulting to a central coordinate for mock purposes
@@ -46,12 +46,12 @@ abstract class $PropertyCreationModelCopyWith<$Res> {
       _$PropertyCreationModelCopyWithImpl<$Res, PropertyCreationModel>;
   @useResult
   $Res call(
-      {String title,
+      {String? id,
+      String title,
       String address,
       double monthlyRent,
-      String? id,
       int bedrooms,
-      int bathrooms,
+      double bathrooms,
       List<String> amenities,
       double latitude,
       double longitude,
@@ -75,10 +75,10 @@ class _$PropertyCreationModelCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? id = freezed,
     Object? title = null,
     Object? address = null,
     Object? monthlyRent = null,
-    Object? id = freezed,
     Object? bedrooms = null,
     Object? bathrooms = null,
     Object? amenities = null,
@@ -88,6 +88,10 @@ class _$PropertyCreationModelCopyWithImpl<$Res,
     Object? imageUrls = null,
   }) {
     return _then(_value.copyWith(
+      id: freezed == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String?,
       title: null == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -100,10 +104,6 @@ class _$PropertyCreationModelCopyWithImpl<$Res,
           ? _value.monthlyRent
           : monthlyRent // ignore: cast_nullable_to_non_nullable
               as double,
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
       bedrooms: null == bedrooms
           ? _value.bedrooms
           : bedrooms // ignore: cast_nullable_to_non_nullable
@@ -111,7 +111,7 @@ class _$PropertyCreationModelCopyWithImpl<$Res,
       bathrooms: null == bathrooms
           ? _value.bathrooms
           : bathrooms // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       amenities: null == amenities
           ? _value.amenities
           : amenities // ignore: cast_nullable_to_non_nullable
@@ -146,12 +146,12 @@ abstract class _$$PropertyCreationModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String title,
+      {String? id,
+      String title,
       String address,
       double monthlyRent,
-      String? id,
       int bedrooms,
-      int bathrooms,
+      double bathrooms,
       List<String> amenities,
       double latitude,
       double longitude,
@@ -173,10 +173,10 @@ class __$$PropertyCreationModelImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? id = freezed,
     Object? title = null,
     Object? address = null,
     Object? monthlyRent = null,
-    Object? id = freezed,
     Object? bedrooms = null,
     Object? bathrooms = null,
     Object? amenities = null,
@@ -186,6 +186,10 @@ class __$$PropertyCreationModelImplCopyWithImpl<$Res>
     Object? imageUrls = null,
   }) {
     return _then(_$PropertyCreationModelImpl(
+      id: freezed == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String?,
       title: null == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -198,10 +202,6 @@ class __$$PropertyCreationModelImplCopyWithImpl<$Res>
           ? _value.monthlyRent
           : monthlyRent // ignore: cast_nullable_to_non_nullable
               as double,
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
       bedrooms: null == bedrooms
           ? _value.bedrooms
           : bedrooms // ignore: cast_nullable_to_non_nullable
@@ -209,7 +209,7 @@ class __$$PropertyCreationModelImplCopyWithImpl<$Res>
       bathrooms: null == bathrooms
           ? _value.bathrooms
           : bathrooms // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       amenities: null == amenities
           ? _value._amenities
           : amenities // ignore: cast_nullable_to_non_nullable
@@ -238,12 +238,12 @@ class __$$PropertyCreationModelImplCopyWithImpl<$Res>
 
 class _$PropertyCreationModelImpl implements _PropertyCreationModel {
   const _$PropertyCreationModelImpl(
-      {this.title = '',
+      {this.id,
+      this.title = '',
       this.address = '',
-      this.monthlyRent = 0,
-      this.id = null,
+      this.monthlyRent = 0.0,
       this.bedrooms = 1,
-      this.bathrooms = 1,
+      this.bathrooms = 1.0,
       final List<String> amenities = const [],
       this.latitude = 34.0,
       this.longitude = -118.0,
@@ -254,6 +254,8 @@ class _$PropertyCreationModelImpl implements _PropertyCreationModel {
 
 // Step 1: Basic Info
   @override
+  final String? id;
+  @override
   @JsonKey()
   final String title;
   @override
@@ -262,16 +264,13 @@ class _$PropertyCreationModelImpl implements _PropertyCreationModel {
   @override
   @JsonKey()
   final double monthlyRent;
-  @override
-  @JsonKey()
-  final String? id;
 // Step 2: Details & Location
   @override
   @JsonKey()
   final int bedrooms;
   @override
   @JsonKey()
-  final int bathrooms;
+  final double bathrooms;
   final List<String> _amenities;
   @override
   @JsonKey()
@@ -303,7 +302,7 @@ class _$PropertyCreationModelImpl implements _PropertyCreationModel {
 
   @override
   String toString() {
-    return 'PropertyCreationModel(title: $title, address: $address, monthlyRent: $monthlyRent, id: $id, bedrooms: $bedrooms, bathrooms: $bathrooms, amenities: $amenities, latitude: $latitude, longitude: $longitude, description: $description, imageUrls: $imageUrls)';
+    return 'PropertyCreationModel(id: $id, title: $title, address: $address, monthlyRent: $monthlyRent, bedrooms: $bedrooms, bathrooms: $bathrooms, amenities: $amenities, latitude: $latitude, longitude: $longitude, description: $description, imageUrls: $imageUrls)';
   }
 
   @override
@@ -311,11 +310,11 @@ class _$PropertyCreationModelImpl implements _PropertyCreationModel {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PropertyCreationModelImpl &&
+            (identical(other.id, id) || other.id == id) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.address, address) || other.address == address) &&
             (identical(other.monthlyRent, monthlyRent) ||
                 other.monthlyRent == monthlyRent) &&
-            (identical(other.id, id) || other.id == id) &&
             (identical(other.bedrooms, bedrooms) ||
                 other.bedrooms == bedrooms) &&
             (identical(other.bathrooms, bathrooms) ||
@@ -335,10 +334,10 @@ class _$PropertyCreationModelImpl implements _PropertyCreationModel {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      id,
       title,
       address,
       monthlyRent,
-      id,
       bedrooms,
       bathrooms,
       const DeepCollectionEquality().hash(_amenities),
@@ -359,12 +358,12 @@ class _$PropertyCreationModelImpl implements _PropertyCreationModel {
 
 abstract class _PropertyCreationModel implements PropertyCreationModel {
   const factory _PropertyCreationModel(
-      {final String title,
+      {final String? id,
+      final String title,
       final String address,
       final double monthlyRent,
-      final String? id,
       final int bedrooms,
-      final int bathrooms,
+      final double bathrooms,
       final List<String> amenities,
       final double latitude,
       final double longitude,
@@ -373,17 +372,17 @@ abstract class _PropertyCreationModel implements PropertyCreationModel {
 
 // Step 1: Basic Info
   @override
+  String? get id;
+  @override
   String get title;
   @override
   String get address;
   @override
-  double get monthlyRent;
-  @override
-  String? get id; // Step 2: Details & Location
+  double get monthlyRent; // Step 2: Details & Location
   @override
   int get bedrooms;
   @override
-  int get bathrooms;
+  double get bathrooms;
   @override
   List<String> get amenities;
   @override

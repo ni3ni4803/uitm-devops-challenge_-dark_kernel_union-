@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:rentverse_mobile/features/landlord/screens/add_property_step_one_screen.dart';
+import 'package:rentverse_mobile/data/models/property.dart';
 import 'package:rentverse_mobile/features/landlord/state/landlord_property_list_notifier.dart';
 import 'package:rentverse_mobile/features/landlord/state/property_creation_notifier.dart';
 
@@ -14,83 +14,135 @@ class EditPropertyScreen extends ConsumerStatefulWidget {
 }
 
 class _EditPropertyScreenState extends ConsumerState<EditPropertyScreen> {
-  bool _isInitialized = false;
+  
+  bool _isSetupComplete = false;
+  bool _isError = false;
+  // Use RiverpodProviderSubscription to manage the listener lifecycle safely
+  late ProviderSubscription _propertySubscription;
 
-  void _initializeEditForm(List<dynamic> properties) {
-    if (_isInitialized) return; // Prevent re-initialization
-
-    // 1. Find the property by ID from the list. orElse must return null (Property?)
-    final propertyToEdit = properties.firstWhere(
-      (p) => p.id == widget.propertyId,
-      // CORRECTED orElse: Always returns null if not found.
-      orElse: () => null,
-    );
+  @override
+  void initState() {
+    super.initState();
     
-    // 2. If property is not found, navigate away after this frame.
-    if (propertyToEdit == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.go('/landlord');
-      });
-      return;
+    // Start listening immediately
+    _propertySubscription = ref.listenManual(landlordPropertyNotifierProvider, (previous, next) {
+        // If data becomes available and we haven't set up the form yet, proceed
+        if (next.hasValue && next.value != null && !_isSetupComplete) {
+            _loadAndRedirect(next.value!);
+        }
+        // If an error occurs, update the UI state
+        else if (next.hasError && mounted) {
+            setState(() {
+                _isError = true;
+            });
+        }
+    });
+    
+    // Check initial state (if data is already loaded, proceed immediately)
+    final initialAsyncValue = ref.read(landlordPropertyNotifierProvider);
+    if (initialAsyncValue.hasValue && initialAsyncValue.value != null) {
+      _loadAndRedirect(initialAsyncValue.value!);
+    }
+  }
+
+  @override
+  void dispose() {
+    // IMPORTANT: Close the manual subscription when the widget is removed
+    _propertySubscription.close();
+    super.dispose();
+  }
+
+  // Helper method to load data into the notifier and navigate away
+  void _loadAndRedirect(List<Property> properties) {
+    // Prevent multiple redirects if the listener fires again during navigation
+    if (_isSetupComplete || !mounted) return;
+    
+    // 2. Find the property by ID
+    Property? propertyToEdit;
+    
+    // Iterate over the non-nullable list
+    for (var p in properties) {
+      if (p.id == widget.propertyId) {
+        propertyToEdit = p;
+        break;
+      }
     }
 
-    // 3. Load the property data into the PropertyCreationNotifier
-    final notifier = ref.read(propertyCreationNotifierProvider.notifier);
+    // 3. Handle property not found
+    if (propertyToEdit == null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(content: Text('Error: Property ID ${widget.propertyId} not found.')),
+      );
+      context.go('/landlord');
+      return;
+    }
     
-    // NOTE: propertyToEdit is now guaranteed to be a Property object.
-    notifier.updateBasicInfo(
-      title: propertyToEdit.title,
-      address: propertyToEdit.address,
-      monthlyRent: propertyToEdit.monthlyRent,
-    );
-    notifier.updateDetailsAndLocation(
-      bedrooms: propertyToEdit.bedrooms,
-      bathrooms: propertyToEdit.bathrooms,
-      amenities: propertyToEdit.amenities,
-      latitude: propertyToEdit.latitude,
-      longitude: propertyToEdit.longitude,
-    );
-    notifier.updateDescriptionAndMedia(
-      description: propertyToEdit.description,
-      imageUrls: propertyToEdit.imageUrls,
-    );
-    
-    // 4. Mark as initialized
-    setState(() {
-      _isInitialized = true;
+    // 4. Load data into Notifier and Redirect (safe because we are inside a listener/postFrameCallback)
+    // We use addPostFrameCallback to ensure the modification and navigation
+    // happens outside of the subscription or build cycle (Riverpod safe).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+        // We know propertyToEdit is non-null here due to the check above
+        final Property p = propertyToEdit!; 
+        final notifier = ref.read(propertyCreationNotifierProvider.notifier);
+        
+        // Set the ID first (Crucial for the Update logic)
+        notifier.setPropertyId(p.id);
+
+        // Load form data - BASIC INFO
+        notifier.updateBasicInfo(
+          title: p.title,
+          address: p.address,
+          monthlyRent: p.monthlyRent,
+        );
+        // Load form data - DETAILS & LOCATION
+        notifier.updateDetailsAndLocation(
+          bedrooms: p.bedrooms,
+          bathrooms: p.bathrooms.toDouble(), 
+          amenities: p.amenities,
+          latitude: p.latitude,
+          longitude: p.longitude,
+        );
+        // Load form data - DESCRIPTION & MEDIA
+        notifier.updateDescriptionAndMedia(
+          description: p.description,
+          imageUrls: p.imageUrls,
+        );
+        
+        // 5. Navigate to Step 1 of the form, replacing the wrapper screen
+        context.go('/landlord/add-property'); 
+
+        // Set flag to prevent further execution in this method
+        if (mounted) {
+            setState(() {
+                _isSetupComplete = true;
+            });
+        }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // 1. WATCH the property list. The widget will rebuild when data is loaded.
+    // Watch the AsyncValue to show initial loading state
     final propertyListAsync = ref.watch(landlordPropertyNotifierProvider);
-
-    return propertyListAsync.when(
-      loading: () => const Scaffold(
+    
+    // Show spinner if loading or if we haven't successfully redirected yet
+    if (propertyListAsync.isLoading || !_isSetupComplete) {
+      if (_isError) {
+         return Scaffold(
+             appBar: AppBar(title: const Text('Error')),
+             body: Center(child: Text('Error loading properties: ${propertyListAsync.error}')),
+         );
+      }
+      return const Scaffold(
         appBar: null,
         body: Center(child: CircularProgressIndicator()),
-      ),
-      error: (e, s) => Scaffold(
-        appBar: AppBar(title: const Text('Error')),
-        body: Center(child: Text('Error loading data: $e')),
-      ),
-      data: (properties) {
-        // 2. Data is available. Initialize the form state if not already done.
-        _initializeEditForm(properties);
+      );
+    }
 
-        // 3. Only show the form once initialization is complete.
-        if (!_isInitialized) {
-           return const Scaffold(
-            appBar: null,
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        // 4. Initialization successful. Display the Step 1 screen.
-        // It will automatically read the pre-filled data from the notifier.
-        return const AddPropertyStepOneScreen();
-      },
+    // This path is theoretically unreachable once navigation succeeds.
+    return const Scaffold(
+        body: Center(child: Text('Redirecting...'))
     );
   }
 }
+

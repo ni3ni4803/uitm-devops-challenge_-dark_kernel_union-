@@ -12,7 +12,7 @@ class PropertyCreationNotifier extends StateNotifier<PropertyCreationModel> {
 
   PropertyCreationNotifier(this.ref) : super(const PropertyCreationModel());
 
-  // === NEW: ID Setter for Edit Flow ===
+  // === ID Setter for Edit Flow ===
   void setPropertyId(String id) {
     state = state.copyWith(id: id);
   }
@@ -26,14 +26,15 @@ class PropertyCreationNotifier extends StateNotifier<PropertyCreationModel> {
     );
   }
 
-  // === Step 2: Details & Location ===
+  // === Step 2: Details & Location (Used by AddPropertyStepTwoScreen) ===
+    // Parameter 'bathrooms' is double to allow half-bath counts.
   void updateDetailsAndLocation({
     int? bedrooms,
-    int? bathrooms,
+    double? bathrooms, 
     List<String>? amenities,
     double? latitude,
     double? longitude,
-  }) {
+}) {
     state = state.copyWith(
       bedrooms: bedrooms ?? state.bedrooms,
       bathrooms: bathrooms ?? state.bathrooms,
@@ -41,9 +42,10 @@ class PropertyCreationNotifier extends StateNotifier<PropertyCreationModel> {
       latitude: latitude ?? state.latitude,
       longitude: longitude ?? state.longitude,
     );
-  }
+}
 
-  // === Step 3: Description & Media ===
+
+  // === Step 3: Description & Media (Used by AddPropertyStepThreeScreen) ===
   void updateDescriptionAndMedia({String? description, List<String>? imageUrls}) {
     state = state.copyWith(
       description: description ?? state.description,
@@ -53,14 +55,20 @@ class PropertyCreationNotifier extends StateNotifier<PropertyCreationModel> {
 
   // === Final Submission for ADDING ===
   Future<bool> submitProperty() async {
-    final landlordId = ref.read(authNotifierProvider)?.id ?? 'landlord-456'; 
+    final landlordId = ref.read(authNotifierProvider.select((user) => user?.id)) ?? 'landlord-456'; 
+
+    // Basic validation to prevent submitting empty core data
+    if (state.title.isEmpty || state.address.isEmpty || state.monthlyRent <= 0) {
+        debugPrint('Submission failed: Missing core data.');
+        return false;
+    }
 
     try {
       final newProperty = Property(
         id: 'lp-${DateTime.now().millisecondsSinceEpoch}',
-        title: state.title.isEmpty ? 'Untitled Listing' : state.title, 
-        address: state.address.isEmpty ? 'No Address' : state.address,   
-        monthlyRent: state.monthlyRent > 0 ? state.monthlyRent : 1000.00, 
+        title: state.title, 
+        address: state.address,   
+        monthlyRent: state.monthlyRent, 
         bedrooms: state.bedrooms,
         bathrooms: state.bathrooms,
         description: state.description,
@@ -74,11 +82,13 @@ class PropertyCreationNotifier extends StateNotifier<PropertyCreationModel> {
         ownerId: landlordId,
       );
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      // Simulate API call
+      await Future.delayed(const Duration(milliseconds: 500)); 
 
+      // Update the Landlord's list of properties
       ref.read(landlordPropertyNotifierProvider.notifier).addProperty(newProperty);
 
-      resetForm();
+      resetDraft();
       return true;
     } catch (e, st) {
       debugPrint('CRITICAL PROPERTY SUBMISSION ERROR: $e');
@@ -87,21 +97,27 @@ class PropertyCreationNotifier extends StateNotifier<PropertyCreationModel> {
     }
   }
 
-  // === NEW: Final Submission for EDITING ===
+  // === Final Submission for EDITING ===
   Future<bool> updateProperty() async {
-    final landlordId = ref.read(authNotifierProvider)?.id ?? 'landlord-456';
+    final landlordId = ref.read(authNotifierProvider.select((user) => user?.id)) ?? 'landlord-456';
 
     if (state.id == null) {
       debugPrint('Update failed: Missing property ID.');
       return false;
     }
+    
+    // Basic validation
+    if (state.title.isEmpty || state.address.isEmpty || state.monthlyRent <= 0) {
+        debugPrint('Update failed: Missing core data.');
+        return false;
+    }
 
     try {
       final updatedProperty = Property(
         id: state.id!, // Use the existing ID
-        title: state.title.isEmpty ? 'Untitled Listing' : state.title,
-        address: state.address.isEmpty ? 'No Address' : state.address,
-        monthlyRent: state.monthlyRent > 0 ? state.monthlyRent : 1000.00,
+        title: state.title,
+        address: state.address,
+        monthlyRent: state.monthlyRent,
         bedrooms: state.bedrooms,
         bathrooms: state.bathrooms,
         description: state.description,
@@ -113,14 +129,16 @@ class PropertyCreationNotifier extends StateNotifier<PropertyCreationModel> {
         longitude: state.longitude,
         isAvailable: true, 
         ownerId: landlordId,
+        // NOTE: In a real app, copy over fields like creationDate, isAvailable, etc.
       );
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      // Simulate API call
+      await Future.delayed(const Duration(milliseconds: 500));
 
       // CRITICAL DIFFERENCE: Call updateProperty on the list notifier
       ref.read(landlordPropertyNotifierProvider.notifier).updateProperty(updatedProperty);
 
-      resetForm();
+      resetDraft();
       return true;
     } catch (e, st) {
       debugPrint('CRITICAL PROPERTY UPDATE ERROR: $e');
@@ -129,7 +147,8 @@ class PropertyCreationNotifier extends StateNotifier<PropertyCreationModel> {
     }
   }
 
-  void resetForm() {
+  // === Form Reset ===
+  void resetDraft() { 
     state = const PropertyCreationModel();
   }
 }

@@ -9,7 +9,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier() : super(null); // Initial state is null (logged out)
 
   // Mock User Data for demonstration
-  // RENAMED: _mockTenantUser to clearly differentiate
   final User _mockTenantUser = const User( 
     id: 'user-123',
     email: 'tenant@rentverse.com',
@@ -17,13 +16,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
     role: 'tenant', // Explicit role
   );
 
-  // NEW: Mock Landlord Data
+  // Mock Landlord Data
   final User _mockLandlordUser = const User(
     id: 'landlord-456',
     email: 'landlord@rentverse.com',
     fullName: 'Mark Smith',
     role: 'landlord', // Explicit role
   );
+  
+  // NEW ADMIN ADDITION: Mock Admin Data
+  final User _mockAdminUser = const User(
+    id: 'admin-789',
+    email: 'admin@rentverse.com', // Use this email for admin login
+    fullName: 'Boss Man',
+    role: 'admin', // Explicit role
+  ); // NEW ADMIN ADDITION
 
   // Simulates a successful login after a delay
   Future<void> login(String email, String password) async {
@@ -36,7 +43,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
     
     // UPDATED LOGIN LOGIC to check the email and set the appropriate user state
-    if (email == _mockLandlordUser.email) {
+    // NEW ADMIN ADDITION: Check for admin role first
+    if (email == _mockAdminUser.email) {
+      state = _mockAdminUser; // Log in as admin
+    } else if (email == _mockLandlordUser.email) {
       state = _mockLandlordUser; // Log in as landlord
     } else if (email == _mockTenantUser.email) {
       state = _mockTenantUser; // Log in as tenant
@@ -73,3 +83,4 @@ final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>(
 final isAuthenticatedProvider = Provider<bool>((ref) {
   return ref.watch(authNotifierProvider) != null;
 });
+

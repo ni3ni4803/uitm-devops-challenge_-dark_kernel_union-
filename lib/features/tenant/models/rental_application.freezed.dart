@@ -20,20 +20,31 @@ RentalApplication _$RentalApplicationFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$RentalApplication {
-// Basic Information
+// Application Metadata
+  String get propertyId =>
+      throw _privateConstructorUsedError; // === Step 1: Personal Info (Synchronized) ===
   String get fullName => throw _privateConstructorUsedError;
+  String get email =>
+      throw _privateConstructorUsedError; // ADDED: Email is required by Step 1 form
   String get phone => throw _privateConstructorUsedError;
+  String get driverLicenseNumber =>
+      throw _privateConstructorUsedError; // ADDED: License is required by Step 1 form
   String get dateOfBirth =>
-      throw _privateConstructorUsedError; // Store as String/DateTime
-// Financial Information
-  double get monthlyIncome => throw _privateConstructorUsedError;
-  String get employerName => throw _privateConstructorUsedError;
+      throw _privateConstructorUsedError; // === Step 2: Financial Info (Synchronized) ===
+// Renamed to match Notifier's expected parameter
+  double get currentMonthlyIncome => throw _privateConstructorUsedError;
+  String get employerName =>
+      throw _privateConstructorUsedError; // Added field that Notifier/Form sends
+  String get employerPhone => throw _privateConstructorUsedError;
   String get employmentDuration =>
-      throw _privateConstructorUsedError; // Residence History
-  String get currentAddress => throw _privateConstructorUsedError;
-  String get currentLandlordContact =>
-      throw _privateConstructorUsedError; // Property ID associated with this application
-  String get propertyId => throw _privateConstructorUsedError;
+      throw _privateConstructorUsedError; // === Step 3: Residence History (Synchronized) ===
+  String get currentAddress =>
+      throw _privateConstructorUsedError; // Renamed field that Notifier/Form sends
+  String get currentLandlordName =>
+      throw _privateConstructorUsedError; // Added field that Notifier/Form sends
+  String get currentLandlordPhone =>
+      throw _privateConstructorUsedError; // Submission Status
+  bool get isSubmitted => throw _privateConstructorUsedError;
 
   /// Serializes this RentalApplication to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -52,15 +63,20 @@ abstract class $RentalApplicationCopyWith<$Res> {
       _$RentalApplicationCopyWithImpl<$Res, RentalApplication>;
   @useResult
   $Res call(
-      {String fullName,
+      {String propertyId,
+      String fullName,
+      String email,
       String phone,
+      String driverLicenseNumber,
       String dateOfBirth,
-      double monthlyIncome,
+      double currentMonthlyIncome,
       String employerName,
+      String employerPhone,
       String employmentDuration,
       String currentAddress,
-      String currentLandlordContact,
-      String propertyId});
+      String currentLandlordName,
+      String currentLandlordPhone,
+      bool isSubmitted});
 }
 
 /// @nodoc
@@ -78,36 +94,57 @@ class _$RentalApplicationCopyWithImpl<$Res, $Val extends RentalApplication>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? propertyId = null,
     Object? fullName = null,
+    Object? email = null,
     Object? phone = null,
+    Object? driverLicenseNumber = null,
     Object? dateOfBirth = null,
-    Object? monthlyIncome = null,
+    Object? currentMonthlyIncome = null,
     Object? employerName = null,
+    Object? employerPhone = null,
     Object? employmentDuration = null,
     Object? currentAddress = null,
-    Object? currentLandlordContact = null,
-    Object? propertyId = null,
+    Object? currentLandlordName = null,
+    Object? currentLandlordPhone = null,
+    Object? isSubmitted = null,
   }) {
     return _then(_value.copyWith(
+      propertyId: null == propertyId
+          ? _value.propertyId
+          : propertyId // ignore: cast_nullable_to_non_nullable
+              as String,
       fullName: null == fullName
           ? _value.fullName
           : fullName // ignore: cast_nullable_to_non_nullable
+              as String,
+      email: null == email
+          ? _value.email
+          : email // ignore: cast_nullable_to_non_nullable
               as String,
       phone: null == phone
           ? _value.phone
           : phone // ignore: cast_nullable_to_non_nullable
               as String,
+      driverLicenseNumber: null == driverLicenseNumber
+          ? _value.driverLicenseNumber
+          : driverLicenseNumber // ignore: cast_nullable_to_non_nullable
+              as String,
       dateOfBirth: null == dateOfBirth
           ? _value.dateOfBirth
           : dateOfBirth // ignore: cast_nullable_to_non_nullable
               as String,
-      monthlyIncome: null == monthlyIncome
-          ? _value.monthlyIncome
-          : monthlyIncome // ignore: cast_nullable_to_non_nullable
+      currentMonthlyIncome: null == currentMonthlyIncome
+          ? _value.currentMonthlyIncome
+          : currentMonthlyIncome // ignore: cast_nullable_to_non_nullable
               as double,
       employerName: null == employerName
           ? _value.employerName
           : employerName // ignore: cast_nullable_to_non_nullable
+              as String,
+      employerPhone: null == employerPhone
+          ? _value.employerPhone
+          : employerPhone // ignore: cast_nullable_to_non_nullable
               as String,
       employmentDuration: null == employmentDuration
           ? _value.employmentDuration
@@ -117,14 +154,18 @@ class _$RentalApplicationCopyWithImpl<$Res, $Val extends RentalApplication>
           ? _value.currentAddress
           : currentAddress // ignore: cast_nullable_to_non_nullable
               as String,
-      currentLandlordContact: null == currentLandlordContact
-          ? _value.currentLandlordContact
-          : currentLandlordContact // ignore: cast_nullable_to_non_nullable
+      currentLandlordName: null == currentLandlordName
+          ? _value.currentLandlordName
+          : currentLandlordName // ignore: cast_nullable_to_non_nullable
               as String,
-      propertyId: null == propertyId
-          ? _value.propertyId
-          : propertyId // ignore: cast_nullable_to_non_nullable
+      currentLandlordPhone: null == currentLandlordPhone
+          ? _value.currentLandlordPhone
+          : currentLandlordPhone // ignore: cast_nullable_to_non_nullable
               as String,
+      isSubmitted: null == isSubmitted
+          ? _value.isSubmitted
+          : isSubmitted // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -138,15 +179,20 @@ abstract class _$$RentalApplicationImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String fullName,
+      {String propertyId,
+      String fullName,
+      String email,
       String phone,
+      String driverLicenseNumber,
       String dateOfBirth,
-      double monthlyIncome,
+      double currentMonthlyIncome,
       String employerName,
+      String employerPhone,
       String employmentDuration,
       String currentAddress,
-      String currentLandlordContact,
-      String propertyId});
+      String currentLandlordName,
+      String currentLandlordPhone,
+      bool isSubmitted});
 }
 
 /// @nodoc
@@ -162,36 +208,57 @@ class __$$RentalApplicationImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? propertyId = null,
     Object? fullName = null,
+    Object? email = null,
     Object? phone = null,
+    Object? driverLicenseNumber = null,
     Object? dateOfBirth = null,
-    Object? monthlyIncome = null,
+    Object? currentMonthlyIncome = null,
     Object? employerName = null,
+    Object? employerPhone = null,
     Object? employmentDuration = null,
     Object? currentAddress = null,
-    Object? currentLandlordContact = null,
-    Object? propertyId = null,
+    Object? currentLandlordName = null,
+    Object? currentLandlordPhone = null,
+    Object? isSubmitted = null,
   }) {
     return _then(_$RentalApplicationImpl(
+      propertyId: null == propertyId
+          ? _value.propertyId
+          : propertyId // ignore: cast_nullable_to_non_nullable
+              as String,
       fullName: null == fullName
           ? _value.fullName
           : fullName // ignore: cast_nullable_to_non_nullable
+              as String,
+      email: null == email
+          ? _value.email
+          : email // ignore: cast_nullable_to_non_nullable
               as String,
       phone: null == phone
           ? _value.phone
           : phone // ignore: cast_nullable_to_non_nullable
               as String,
+      driverLicenseNumber: null == driverLicenseNumber
+          ? _value.driverLicenseNumber
+          : driverLicenseNumber // ignore: cast_nullable_to_non_nullable
+              as String,
       dateOfBirth: null == dateOfBirth
           ? _value.dateOfBirth
           : dateOfBirth // ignore: cast_nullable_to_non_nullable
               as String,
-      monthlyIncome: null == monthlyIncome
-          ? _value.monthlyIncome
-          : monthlyIncome // ignore: cast_nullable_to_non_nullable
+      currentMonthlyIncome: null == currentMonthlyIncome
+          ? _value.currentMonthlyIncome
+          : currentMonthlyIncome // ignore: cast_nullable_to_non_nullable
               as double,
       employerName: null == employerName
           ? _value.employerName
           : employerName // ignore: cast_nullable_to_non_nullable
+              as String,
+      employerPhone: null == employerPhone
+          ? _value.employerPhone
+          : employerPhone // ignore: cast_nullable_to_non_nullable
               as String,
       employmentDuration: null == employmentDuration
           ? _value.employmentDuration
@@ -201,14 +268,18 @@ class __$$RentalApplicationImplCopyWithImpl<$Res>
           ? _value.currentAddress
           : currentAddress // ignore: cast_nullable_to_non_nullable
               as String,
-      currentLandlordContact: null == currentLandlordContact
-          ? _value.currentLandlordContact
-          : currentLandlordContact // ignore: cast_nullable_to_non_nullable
+      currentLandlordName: null == currentLandlordName
+          ? _value.currentLandlordName
+          : currentLandlordName // ignore: cast_nullable_to_non_nullable
               as String,
-      propertyId: null == propertyId
-          ? _value.propertyId
-          : propertyId // ignore: cast_nullable_to_non_nullable
+      currentLandlordPhone: null == currentLandlordPhone
+          ? _value.currentLandlordPhone
+          : currentLandlordPhone // ignore: cast_nullable_to_non_nullable
               as String,
+      isSubmitted: null == isSubmitted
+          ? _value.isSubmitted
+          : isSubmitted // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -217,54 +288,80 @@ class __$$RentalApplicationImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$RentalApplicationImpl implements _RentalApplication {
   const _$RentalApplicationImpl(
-      {this.fullName = '',
+      {required this.propertyId,
+      this.fullName = '',
+      this.email = '',
       this.phone = '',
+      this.driverLicenseNumber = '',
       this.dateOfBirth = '',
-      this.monthlyIncome = 0,
+      this.currentMonthlyIncome = 0,
       this.employerName = '',
+      this.employerPhone = '',
       this.employmentDuration = '',
       this.currentAddress = '',
-      this.currentLandlordContact = '',
-      required this.propertyId});
+      this.currentLandlordName = '',
+      this.currentLandlordPhone = '',
+      this.isSubmitted = false});
 
   factory _$RentalApplicationImpl.fromJson(Map<String, dynamic> json) =>
       _$$RentalApplicationImplFromJson(json);
 
-// Basic Information
+// Application Metadata
+  @override
+  final String propertyId;
+// === Step 1: Personal Info (Synchronized) ===
   @override
   @JsonKey()
   final String fullName;
   @override
   @JsonKey()
+  final String email;
+// ADDED: Email is required by Step 1 form
+  @override
+  @JsonKey()
   final String phone;
   @override
   @JsonKey()
-  final String dateOfBirth;
-// Store as String/DateTime
-// Financial Information
+  final String driverLicenseNumber;
+// ADDED: License is required by Step 1 form
   @override
   @JsonKey()
-  final double monthlyIncome;
+  final String dateOfBirth;
+// === Step 2: Financial Info (Synchronized) ===
+// Renamed to match Notifier's expected parameter
+  @override
+  @JsonKey()
+  final double currentMonthlyIncome;
   @override
   @JsonKey()
   final String employerName;
+// Added field that Notifier/Form sends
+  @override
+  @JsonKey()
+  final String employerPhone;
   @override
   @JsonKey()
   final String employmentDuration;
-// Residence History
+// === Step 3: Residence History (Synchronized) ===
   @override
   @JsonKey()
   final String currentAddress;
+// Renamed field that Notifier/Form sends
   @override
   @JsonKey()
-  final String currentLandlordContact;
-// Property ID associated with this application
+  final String currentLandlordName;
+// Added field that Notifier/Form sends
   @override
-  final String propertyId;
+  @JsonKey()
+  final String currentLandlordPhone;
+// Submission Status
+  @override
+  @JsonKey()
+  final bool isSubmitted;
 
   @override
   String toString() {
-    return 'RentalApplication(fullName: $fullName, phone: $phone, dateOfBirth: $dateOfBirth, monthlyIncome: $monthlyIncome, employerName: $employerName, employmentDuration: $employmentDuration, currentAddress: $currentAddress, currentLandlordContact: $currentLandlordContact, propertyId: $propertyId)';
+    return 'RentalApplication(propertyId: $propertyId, fullName: $fullName, email: $email, phone: $phone, driverLicenseNumber: $driverLicenseNumber, dateOfBirth: $dateOfBirth, currentMonthlyIncome: $currentMonthlyIncome, employerName: $employerName, employerPhone: $employerPhone, employmentDuration: $employmentDuration, currentAddress: $currentAddress, currentLandlordName: $currentLandlordName, currentLandlordPhone: $currentLandlordPhone, isSubmitted: $isSubmitted)';
   }
 
   @override
@@ -272,38 +369,52 @@ class _$RentalApplicationImpl implements _RentalApplication {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$RentalApplicationImpl &&
+            (identical(other.propertyId, propertyId) ||
+                other.propertyId == propertyId) &&
             (identical(other.fullName, fullName) ||
                 other.fullName == fullName) &&
+            (identical(other.email, email) || other.email == email) &&
             (identical(other.phone, phone) || other.phone == phone) &&
+            (identical(other.driverLicenseNumber, driverLicenseNumber) ||
+                other.driverLicenseNumber == driverLicenseNumber) &&
             (identical(other.dateOfBirth, dateOfBirth) ||
                 other.dateOfBirth == dateOfBirth) &&
-            (identical(other.monthlyIncome, monthlyIncome) ||
-                other.monthlyIncome == monthlyIncome) &&
+            (identical(other.currentMonthlyIncome, currentMonthlyIncome) ||
+                other.currentMonthlyIncome == currentMonthlyIncome) &&
             (identical(other.employerName, employerName) ||
                 other.employerName == employerName) &&
+            (identical(other.employerPhone, employerPhone) ||
+                other.employerPhone == employerPhone) &&
             (identical(other.employmentDuration, employmentDuration) ||
                 other.employmentDuration == employmentDuration) &&
             (identical(other.currentAddress, currentAddress) ||
                 other.currentAddress == currentAddress) &&
-            (identical(other.currentLandlordContact, currentLandlordContact) ||
-                other.currentLandlordContact == currentLandlordContact) &&
-            (identical(other.propertyId, propertyId) ||
-                other.propertyId == propertyId));
+            (identical(other.currentLandlordName, currentLandlordName) ||
+                other.currentLandlordName == currentLandlordName) &&
+            (identical(other.currentLandlordPhone, currentLandlordPhone) ||
+                other.currentLandlordPhone == currentLandlordPhone) &&
+            (identical(other.isSubmitted, isSubmitted) ||
+                other.isSubmitted == isSubmitted));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      propertyId,
       fullName,
+      email,
       phone,
+      driverLicenseNumber,
       dateOfBirth,
-      monthlyIncome,
+      currentMonthlyIncome,
       employerName,
+      employerPhone,
       employmentDuration,
       currentAddress,
-      currentLandlordContact,
-      propertyId);
+      currentLandlordName,
+      currentLandlordPhone,
+      isSubmitted);
 
   /// Create a copy of RentalApplication
   /// with the given fields replaced by the non-null parameter values.
@@ -324,40 +435,55 @@ class _$RentalApplicationImpl implements _RentalApplication {
 
 abstract class _RentalApplication implements RentalApplication {
   const factory _RentalApplication(
-      {final String fullName,
+      {required final String propertyId,
+      final String fullName,
+      final String email,
       final String phone,
+      final String driverLicenseNumber,
       final String dateOfBirth,
-      final double monthlyIncome,
+      final double currentMonthlyIncome,
       final String employerName,
+      final String employerPhone,
       final String employmentDuration,
       final String currentAddress,
-      final String currentLandlordContact,
-      required final String propertyId}) = _$RentalApplicationImpl;
+      final String currentLandlordName,
+      final String currentLandlordPhone,
+      final bool isSubmitted}) = _$RentalApplicationImpl;
 
   factory _RentalApplication.fromJson(Map<String, dynamic> json) =
       _$RentalApplicationImpl.fromJson;
 
-// Basic Information
+// Application Metadata
+  @override
+  String get propertyId; // === Step 1: Personal Info (Synchronized) ===
   @override
   String get fullName;
   @override
+  String get email; // ADDED: Email is required by Step 1 form
+  @override
   String get phone;
   @override
-  String get dateOfBirth; // Store as String/DateTime
-// Financial Information
+  String get driverLicenseNumber; // ADDED: License is required by Step 1 form
   @override
-  double get monthlyIncome;
+  String get dateOfBirth; // === Step 2: Financial Info (Synchronized) ===
+// Renamed to match Notifier's expected parameter
   @override
-  String get employerName;
+  double get currentMonthlyIncome;
   @override
-  String get employmentDuration; // Residence History
+  String get employerName; // Added field that Notifier/Form sends
   @override
-  String get currentAddress;
+  String get employerPhone;
   @override
   String
-      get currentLandlordContact; // Property ID associated with this application
+      get employmentDuration; // === Step 3: Residence History (Synchronized) ===
   @override
-  String get propertyId;
+  String get currentAddress; // Renamed field that Notifier/Form sends
+  @override
+  String get currentLandlordName; // Added field that Notifier/Form sends
+  @override
+  String get currentLandlordPhone; // Submission Status
+  @override
+  bool get isSubmitted;
 
   /// Create a copy of RentalApplication
   /// with the given fields replaced by the non-null parameter values.

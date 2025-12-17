@@ -13,19 +13,34 @@ class AddPropertyStepOneScreen extends ConsumerStatefulWidget {
 
 class _AddPropertyStepOneScreenState extends ConsumerState<AddPropertyStepOneScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _titleController;
-  late final TextEditingController _addressController;
-  late final TextEditingController _rentController;
+  // Use 'late' only, as they are initialized in initState
+  late TextEditingController _titleController; 
+  late TextEditingController _addressController;
+  late TextEditingController _rentController;
 
   @override
   void initState() {
     super.initState();
+    
+    final currentState = ref.read(propertyCreationNotifierProvider);
+    
+    // === CRITICAL FIX: The method name in the Notifier is resetDraft() ===
+    // Only reset the draft if we are starting a *new* property (ID is null).
+    // If the user lands here via the 'Add Property' button, the state should be clean.
+    if (currentState.id == null && currentState.title.isNotEmpty) {
+      // This ensures if they force-navigate back to step 1 from outside the flow, the form is fresh.
+      // However, usually, reset is only called upon successful submission or manual close.
+      // We will remove this line to allow persistent navigation back-and-forth between the steps.
+      // ref.read(propertyCreationNotifierProvider.notifier).resetDraft(); 
+    }
+    
     // Initialize controllers with current state data from the notifier
-    final state = ref.read(propertyCreationNotifierProvider);
+    final state = ref.read(propertyCreationNotifierProvider); 
     _titleController = TextEditingController(text: state.title);
     _addressController = TextEditingController(text: state.address);
     // Convert double rent to string for the controller
     _rentController = TextEditingController(
+      // Check if monthlyRent is defined before displaying
       text: state.monthlyRent > 0 ? state.monthlyRent.toString() : '',
     );
   }
@@ -40,23 +55,41 @@ class _AddPropertyStepOneScreenState extends ConsumerState<AddPropertyStepOneScr
           );
 
       // 2. Navigate to the next step
-      // We will define this route in the next step
       context.go('/landlord/add-property/details');
+    }
+  }
+  
+  // Helper to handle navigation away (Close/Cancel)
+  void _handleCancel() {
+    final creationState = ref.read(propertyCreationNotifierProvider);
+    final notifier = ref.read(propertyCreationNotifierProvider.notifier);
+
+    // If adding a new property, clear the draft state
+    if (creationState.id == null) {
+        notifier.resetDraft(); // 🚨 Correct method call
+        context.go('/landlord');
+    } else {
+        // If editing, go back to the landlord home (or property detail screen if implemented)
+        context.go('/landlord'); 
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // 1. WATCH the state to dynamically update the title
+    final creationState = ref.watch(propertyCreationNotifierProvider);
+    
+    // 2. Determine the title based on the presence of the ID
+    final titleText = creationState.id == null 
+        ? 'Add New Property (1/3)' 
+        : 'Edit Property Listing (1/3)'; 
+        
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Property (1/3)'),
+        title: Text(titleText), // Use the dynamic title
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () {
-            // OPTIONAL: Reset form state when closing
-            ref.read(propertyCreationNotifierProvider.notifier).resetForm();
-            context.go('/landlord'); // Close and return to dashboard
-          },
+          onPressed: _handleCancel, // Use dedicated cancel handler
         ),
       ),
       body: Form(
@@ -131,6 +164,7 @@ class _AddPropertyStepOneScreenState extends ConsumerState<AddPropertyStepOneScr
 
   @override
   void dispose() {
+    // NOTE: Only dispose of controllers if they are local, which they are.
     _titleController.dispose();
     _addressController.dispose();
     _rentController.dispose();

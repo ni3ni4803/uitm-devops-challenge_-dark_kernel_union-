@@ -26,7 +26,7 @@ mixin _$Property {
   double get latitude => throw _privateConstructorUsedError;
   double get longitude => throw _privateConstructorUsedError;
   int get bedrooms => throw _privateConstructorUsedError;
-  int get bathrooms => throw _privateConstructorUsedError;
+  double get bathrooms => throw _privateConstructorUsedError;
   double get monthlyRent => throw _privateConstructorUsedError;
   @JsonKey(name: 'image_urls')
   List<String> get imageUrls => throw _privateConstructorUsedError;
@@ -59,7 +59,7 @@ abstract class $PropertyCopyWith<$Res> {
       double latitude,
       double longitude,
       int bedrooms,
-      int bathrooms,
+      double bathrooms,
       double monthlyRent,
       @JsonKey(name: 'image_urls') List<String> imageUrls,
       String? description,
@@ -125,7 +125,7 @@ class _$PropertyCopyWithImpl<$Res, $Val extends Property>
       bathrooms: null == bathrooms
           ? _value.bathrooms
           : bathrooms // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       monthlyRent: null == monthlyRent
           ? _value.monthlyRent
           : monthlyRent // ignore: cast_nullable_to_non_nullable
@@ -169,7 +169,7 @@ abstract class _$$PropertyImplCopyWith<$Res>
       double latitude,
       double longitude,
       int bedrooms,
-      int bathrooms,
+      double bathrooms,
       double monthlyRent,
       @JsonKey(name: 'image_urls') List<String> imageUrls,
       String? description,
@@ -233,7 +233,7 @@ class __$$PropertyImplCopyWithImpl<$Res>
       bathrooms: null == bathrooms
           ? _value.bathrooms
           : bathrooms // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       monthlyRent: null == monthlyRent
           ? _value.monthlyRent
           : monthlyRent // ignore: cast_nullable_to_non_nullable
@@ -298,7 +298,7 @@ class _$PropertyImpl implements _Property {
   @override
   final int bedrooms;
   @override
-  final int bathrooms;
+  final double bathrooms;
   @override
   final double monthlyRent;
   final List<String> _imageUrls;
@@ -404,7 +404,7 @@ abstract class _Property implements Property {
       required final double latitude,
       required final double longitude,
       required final int bedrooms,
-      required final int bathrooms,
+      required final double bathrooms,
       required final double monthlyRent,
       @JsonKey(name: 'image_urls') final List<String> imageUrls,
       final String? description,
@@ -428,7 +428,7 @@ abstract class _Property implements Property {
   @override
   int get bedrooms;
   @override
-  int get bathrooms;
+  double get bathrooms;
   @override
   double get monthlyRent;
   @override

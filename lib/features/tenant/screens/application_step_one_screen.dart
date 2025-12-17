@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-//import 'package:rentverse_mobile/features/tenant/models/rental_application.dart'; 
 import 'package:rentverse_mobile/features/tenant/state/application_notifier.dart';
 
 class ApplicationStepOneScreen extends ConsumerStatefulWidget {
@@ -9,59 +8,58 @@ class ApplicationStepOneScreen extends ConsumerStatefulWidget {
   const ApplicationStepOneScreen({super.key, required this.propertyId});
 
   @override
-  ConsumerState<ApplicationStepOneScreen> createState() =>
-      _ApplicationStepOneScreenState();
+  ConsumerState<ApplicationStepOneScreen> createState() => _ApplicationStepOneScreenState();
 }
 
-class _ApplicationStepOneScreenState
-    extends ConsumerState<ApplicationStepOneScreen> {
+class _ApplicationStepOneScreenState extends ConsumerState<ApplicationStepOneScreen> {
   final _formKey = GlobalKey<FormState>();
-  
-  // Local controllers to capture form input
-  final _fullNameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _dobController = TextEditingController();
 
-  // Initialize the state notifier for this specific property ID
-  late final applicationProvider = applicationNotifierProvider(widget.propertyId);
+  late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _licenseController;
+  late final TextEditingController _dobController; // 🚨 Added for Date of Birth
 
   @override
   void initState() {
     super.initState();
-    // Load existing data if navigating back from a later step
-    final currentApp = ref.read(applicationProvider);
-    _fullNameController.text = currentApp.fullName;
-    _phoneController.text = currentApp.phone;
-    _dobController.text = currentApp.dateOfBirth;
+    final state = ref.read(applicationNotifierProvider(widget.propertyId));
+
+    _nameController = TextEditingController(text: state.fullName);
+    _emailController = TextEditingController(text: state.email);
+    _phoneController = TextEditingController(text: state.phone);
+    _licenseController = TextEditingController(text: state.driverLicenseNumber);
+    _dobController = TextEditingController(text: state.dateOfBirth); // 🚨 Initialize
   }
-  
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _licenseController.dispose();
+    _dobController.dispose(); // 🚨 Dispose
+    super.dispose();
+  }
+
   void _handleNext() {
     if (_formKey.currentState!.validate()) {
-      // 1. Get the current application state
-      final currentApp = ref.read(applicationProvider);
+      ref.read(applicationNotifierProvider(widget.propertyId).notifier).updatePersonalInfo(
+            fullName: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            phone: _phoneController.text.trim(),
+            driverLicenseNumber: _licenseController.text.trim(),
+            dateOfBirth: _dobController.text.trim(), // 🚨 FIX: Now passing the required argument
+          );
 
-      // 2. Create a copy with updated data
-      final updatedApp = currentApp.copyWith(
-        fullName: _fullNameController.text.trim(),
-        phone: _phoneController.text.trim(),
-        dateOfBirth: _dobController.text.trim(),
-      );
-
-      // 3. Update the Riverpod state
-      ref.read(applicationProvider.notifier).updateApplication(updatedApp);
-
-      // 4. Navigate to the next step
-      // We will define this route next
-      context.go('/apply/financial/${widget.propertyId}'); 
+      context.go('/apply/financial/${widget.propertyId}');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Application: Personal Info (1/3)'),
-      ),
+      appBar: AppBar(title: const Text('Application (1/3): Personal Info')),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -69,30 +67,43 @@ class _ApplicationStepOneScreenState
           child: Column(
             children: [
               TextFormField(
-                controller: _fullNameController,
-                decoration: const InputDecoration(labelText: 'Full Name'),
-                validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Full Name', border: OutlineInputBorder()),
+                validator: (v) => v!.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: 'Email Address', border: OutlineInputBorder()),
+                validator: (v) => v!.isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _phoneController,
-                decoration: const InputDecoration(labelText: 'Phone Number'),
-                keyboardType: TextInputType.phone,
-                validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                decoration: const InputDecoration(labelText: 'Phone Number', border: OutlineInputBorder()),
+                validator: (v) => v!.isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _dobController,
-                decoration: const InputDecoration(labelText: 'Date of Birth'),
-                validator: (value) => value == null || value.isEmpty ? 'Required' : null,
-                // In a real app, this would use a DatePicker
+                controller: _licenseController,
+                decoration: const InputDecoration(labelText: 'Driver License Number', border: OutlineInputBorder()),
+                validator: (v) => v!.isEmpty ? 'Required' : null,
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 16),
+              // 🚨 New field for Date of Birth
+              TextFormField(
+                controller: _dobController,
+                decoration: const InputDecoration(
+                  labelText: 'Date of Birth (YYYY-MM-DD)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.calendar_today),
+                ),
+                validator: (v) => v!.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _handleNext,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                ),
+                style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
                 child: const Text('Next: Financial Info'),
               ),
             ],
@@ -100,13 +111,5 @@ class _ApplicationStepOneScreenState
         ),
       ),
     );
-  }
-  
-  @override
-  void dispose() {
-    _fullNameController.dispose();
-    _phoneController.dispose();
-    _dobController.dispose();
-    super.dispose();
   }
 }

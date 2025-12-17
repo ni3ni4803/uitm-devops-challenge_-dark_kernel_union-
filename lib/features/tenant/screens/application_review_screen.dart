@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-//import 'package:rentverse_mobile/features/tenant/models/rental_application.dart';
 import 'package:rentverse_mobile/features/tenant/state/application_notifier.dart';
 
 class ApplicationReviewScreen extends ConsumerStatefulWidget {
@@ -13,119 +12,171 @@ class ApplicationReviewScreen extends ConsumerStatefulWidget {
       _ApplicationReviewScreenState();
 }
 
-class _ApplicationReviewScreenState
-    extends ConsumerState<ApplicationReviewScreen> {
-  bool _isSubmitting = false;
+class _ApplicationReviewScreenState extends ConsumerState<ApplicationReviewScreen> {
+  bool _isLoading = false;
 
-  // We use the same provider created in Step 1
-  late final applicationProvider = applicationNotifierProvider(widget.propertyId);
-
-  Future<void> _handleSubmit() async {
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      await ref.read(applicationProvider.notifier).submitApplication();
-      
-      // On success, show confirmation and navigate back to the listings home screen
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Application Submitted Successfully!')),
-        );
-        // Clear the state and navigate to the main listings page
-        context.go('/'); 
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Submission failed: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
-    }
-  }
-  
-  // Helper widget to display a single review field
-  Widget _buildReviewField(String label, String value, VoidCallback onEdit) {
-    return ListTile(
-      title: Text(label),
-      subtitle: Text(value.isEmpty ? 'Not Provided' : value),
-      trailing: IconButton(
-        icon: const Icon(Icons.edit, size: 18),
-        onPressed: onEdit,
+  // === Helper function to build review rows ===
+  Widget _buildReviewField(
+      String title, String value, VoidCallback onEditPressed) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16)),
+                const SizedBox(height: 4),
+                Text(value, style: const TextStyle(fontSize: 16)),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit, size: 20, color: Colors.blue),
+            onPressed: onEditPressed,
+          ),
+        ],
       ),
     );
   }
 
+  Future<void> _handleSubmit() async {
+  if (_isLoading) return;
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  // 🔑 Delay provider update until after build is complete
+  final success = await Future.microtask(() {
+    return ref
+        .read(applicationNotifierProvider(widget.propertyId).notifier)
+        .submitApplication();
+  });
+
+  if (!mounted) return;
+
+  setState(() {
+    _isLoading = false;
+  });
+
+  if (success) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Application Submitted Successfully!'),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    // Navigate AFTER state update is fully done
+    context.go('/');
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Submission failed. Please try again.'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
-    // Watch the provider to get the final collected data
-    final applicationData = ref.watch(applicationProvider);
+    // Watch the application state to display the current data
+    final applicationData = ref.watch(applicationNotifierProvider(widget.propertyId));
+
+    if (applicationData.isSubmitted) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Application Complete')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Text(
+              'Your application for Property ID ${widget.propertyId} has been submitted.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Review & Submit'),
-        // Back button returns to Step 3
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/apply/residence/${widget.propertyId}'),
-        ),
+        title: const Text('Application (4/4): Review & Submit'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Final Check: Please review your information before submitting.',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const Divider(height: 30),
+            Text('Review Your Application',
+                style: Theme.of(context).textTheme.headlineMedium),
+            const SizedBox(height: 20),
 
-            // === 1. Personal Info Section ===
-            Text('Personal Information', style: Theme.of(context).textTheme.headlineSmall),
-            _buildReviewField('Full Name', applicationData.fullName, () => context.go('/apply/${widget.propertyId}')),
-            _buildReviewField('Phone', applicationData.phone, () => context.go('/apply/${widget.propertyId}')),
-            _buildReviewField('Date of Birth', applicationData.dateOfBirth, () => context.go('/apply/${widget.propertyId}')),
+            // --- Section 1: Personal Info ---
+            const Text('1. Personal Information',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+            _buildReviewField('Full Name', applicationData.fullName,
+                () => context.go('/apply/${widget.propertyId}')),
+            _buildReviewField('Email', applicationData.email,
+                () => context.go('/apply/${widget.propertyId}')),
+            _buildReviewField('Phone', applicationData.phone,
+                () => context.go('/apply/${widget.propertyId}')),
+            _buildReviewField('License/ID', applicationData.driverLicenseNumber,
+                () => context.go('/apply/${widget.propertyId}')),
             const Divider(),
 
-            // === 2. Financial Info Section ===
-            Text('Financial Information', style: Theme.of(context).textTheme.headlineSmall),
-            _buildReviewField('Monthly Income', '\$${applicationData.monthlyIncome.toStringAsFixed(2)}', () => context.go('/apply/financial/${widget.propertyId}')),
-            _buildReviewField('Employer', applicationData.employerName, () => context.go('/apply/financial/${widget.propertyId}')),
-            _buildReviewField('Employment Duration', applicationData.employmentDuration, () => context.go('/apply/financial/${widget.propertyId}')),
+            // --- Section 2: Financial Info ---
+            const Text('2. Financial Information',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+            _buildReviewField(
+                'Monthly Income',
+                '\$${applicationData.currentMonthlyIncome.toStringAsFixed(2)}',
+                () => context.go('/apply/financial/${widget.propertyId}')),
+            _buildReviewField('Employer Name', applicationData.employerName,
+                () => context.go('/apply/financial/${widget.propertyId}')),
+            _buildReviewField('Employer Phone', applicationData.employerPhone,
+                () => context.go('/apply/financial/${widget.propertyId}')),
             const Divider(),
 
-            // === 3. Residence History Section ===
-            Text('Residence History', style: Theme.of(context).textTheme.headlineSmall),
-            _buildReviewField('Current Address', applicationData.currentAddress, () => context.go('/apply/residence/${widget.propertyId}')),
-            _buildReviewField('Landlord Contact', applicationData.currentLandlordContact, () => context.go('/apply/residence/${widget.propertyId}')),
-            const Divider(height: 50),
+            // --- Section 3: Residence History ---
+            const Text('3. Residence History',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+            _buildReviewField('Current Address', applicationData.currentAddress,
+                () => context.go('/apply/residence/${widget.propertyId}')),
+            _buildReviewField('Landlord Name', applicationData.currentLandlordName,
+                () => context.go('/apply/residence/${widget.propertyId}')),
+            _buildReviewField('Landlord Contact', applicationData.currentLandlordPhone,
+                () => context.go('/apply/residence/${widget.propertyId}')),
+            const Divider(),
 
-            // Terms and Conditions Placeholder (Important for real apps)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.0),
-              child: Text(
-                "By clicking 'Submit Application', I certify that the information provided is true and accurate.",
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ),
-            
-            // Submission Button
+            const SizedBox(height: 40),
+
+            // --- Submit Button ---
             ElevatedButton(
-              onPressed: _isSubmitting ? null : _handleSubmit,
+              onPressed: _isLoading ? null : _handleSubmit,
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 55),
+                backgroundColor: Colors.blue[700],
               ),
-              child: _isSubmitting
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Submit Application', style: TextStyle(fontSize: 18)),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 3,
+                      ),
+                    )
+                  : const Text('Confirm & Submit Application',
+                      style: TextStyle(fontSize: 18, color: Colors.white)),
             ),
           ],
         ),

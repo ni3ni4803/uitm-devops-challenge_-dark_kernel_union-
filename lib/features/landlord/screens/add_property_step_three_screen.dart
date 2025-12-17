@@ -23,70 +23,77 @@ class _AddPropertyStepThreeScreenState extends ConsumerState<AddPropertyStepThre
     final state = ref.read(propertyCreationNotifierProvider);
     _descriptionController = TextEditingController(text: state.description);
   }
+  
+  // 🚨 NEW: Use watch for dynamic title (like steps 1 and 2)
+  String get _titleText {
+    final creationState = ref.read(propertyCreationNotifierProvider);
+    return creationState.id != null ? 'Edit Listing (3/3)' : 'Add New Property (3/3)';
+  }
 
   Future<void> _handleSubmit() async {
-  if (_formKey.currentState!.validate()) {
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Get the current state model to check if we are editing
-    final creationState = ref.read(propertyCreationNotifierProvider);
-
-    // 1. Update the final pieces of Riverpod state
-    ref.read(propertyCreationNotifierProvider.notifier).updateDescriptionAndMedia(
-      description: _descriptionController.text.trim(),
-      imageUrls: [
-        // Ensure a unique placeholder based on the property ID or Title
-        'https://via.placeholder.com/600x400?text=${creationState.id ?? creationState.title.replaceAll(' ', '+')}',
-      ],
-    );
-
-    // 2. Determine whether to ADD or UPDATE
-    final bool success;
-    final String actionVerb;
-
-    if (creationState.id != null) {
-      // We are EDITING
-      success = await ref.read(propertyCreationNotifierProvider.notifier).updateProperty();
-      actionVerb = 'updated';
-    } else {
-      // We are ADDING
-      success = await ref.read(propertyCreationNotifierProvider.notifier).submitProperty();
-      actionVerb = 'added';
-    }
-
-    if (mounted) {
+    if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = false;
+        _isLoading = true;
       });
 
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Property $actionVerb successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        // 3. Navigate back to the Landlord Dashboard
-        context.go('/landlord');
+      // Get the current state model to check if we are editing
+      final creationState = ref.read(propertyCreationNotifierProvider);
+
+      // 1. Update the final pieces of Riverpod state
+      // 🚨 FIX: Method name changed to updateDescriptionAndMedia
+      ref.read(propertyCreationNotifierProvider.notifier).updateDescriptionAndMedia( 
+        description: _descriptionController.text.trim(),
+        imageUrls: [
+          // Ensure a unique placeholder based on the property ID or Title
+          'https://via.placeholder.com/600x400?text=${creationState.id ?? creationState.title.replaceAll(' ', '+')}',
+        ],
+      );
+
+      // 2. Determine whether to ADD or UPDATE
+      final bool success;
+      final String actionVerb;
+
+      if (creationState.id != null) {
+        // We are EDITING
+        success = await ref.read(propertyCreationNotifierProvider.notifier).updateProperty(); 
+        actionVerb = 'updated';
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Submission failed. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        // We are ADDING
+        success = await ref.read(propertyCreationNotifierProvider.notifier).submitProperty();
+        actionVerb = 'added';
+      }
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Property $actionVerb successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // 3. Navigate back to the Landlord Dashboard
+          context.go('/landlord');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Submission failed. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Property (3/3)'),
+        title: Text(_titleText), // 🚨 FIX: Use the dynamic title getter
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           // Navigate back to Step 2 without resetting the form

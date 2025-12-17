@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rentverse_mobile/features/tenant/state/application_notifier.dart';
@@ -16,102 +17,177 @@ class _ApplicationStepTwoScreenState
     extends ConsumerState<ApplicationStepTwoScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // Local controllers
-  final _incomeController = TextEditingController();
-  final _employerController = TextEditingController();
-  final _durationController = TextEditingController();
-
-  // We use the same provider created in Step 1
-  late final applicationProvider = applicationNotifierProvider(widget.propertyId);
+  late final TextEditingController _incomeController;
+  late final TextEditingController _employerNameController;
+  late final TextEditingController _employerPhoneController;
+  late final TextEditingController _employmentDurationController; // 🚨 NEW
 
   @override
   void initState() {
     super.initState();
-    // Load existing data from the notifier
-    final currentApp = ref.read(applicationProvider);
-    _incomeController.text = currentApp.monthlyIncome.toString();
-    _employerController.text = currentApp.employerName;
-    _durationController.text = currentApp.employmentDuration;
+
+    final state = ref.read(applicationNotifierProvider(widget.propertyId));
+
+    _incomeController = TextEditingController(
+      text: state.currentMonthlyIncome > 0
+          ? state.currentMonthlyIncome.toString()
+          : '',
+    );
+    _employerNameController =
+        TextEditingController(text: state.employerName);
+    _employerPhoneController =
+        TextEditingController(text: state.employerPhone);
+    _employmentDurationController = 
+        TextEditingController(text: state.employmentDuration); // 🚨 NEW
+  }
+
+  @override
+  void dispose() {
+    _incomeController.dispose();
+    _employerNameController.dispose();
+    _employerPhoneController.dispose();
+    _employmentDurationController.dispose(); // 🚨 NEW
+    super.dispose();
   }
 
   void _handleNext() {
     if (_formKey.currentState!.validate()) {
-      final currentApp = ref.read(applicationProvider);
+      ref
+          .read(applicationNotifierProvider(widget.propertyId).notifier)
+          .updateFinancialInfo(
+            currentMonthlyIncome:
+                double.parse(_incomeController.text.trim()),
+            employerName: _employerNameController.text.trim(),
+            employerPhone: _employerPhoneController.text.trim(),
+            employmentDuration: _employmentDurationController.text.trim(), // 🚨 NEW
+          );
 
-      // Create a copy with updated data
-      final updatedApp = currentApp.copyWith(
-        monthlyIncome: double.tryParse(_incomeController.text.trim()) ?? 0.0,
-        employerName: _employerController.text.trim(),
-        employmentDuration: _durationController.text.trim(),
-      );
-
-      // Update the Riverpod state
-      ref.read(applicationProvider.notifier).updateApplication(updatedApp);
-
-      // Navigate to the next step (Residence History)
+      if (!mounted) return;
       context.go('/apply/residence/${widget.propertyId}');
     }
+  }
+
+  void _handleBack() {
+    context.go('/apply/${widget.propertyId}');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Application: Financial Info (2/3)'),
-        // Back button returns to Step 1
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/apply/${widget.propertyId}'),
-        ),
+        title: const Text('Application (2/4): Financial Info'),
       ),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Text(
+                'Financial & Employment',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 20),
+
+              // --- Monthly Income ---
               TextFormField(
                 controller: _incomeController,
-                decoration: const InputDecoration(labelText: 'Monthly Income (\$)', helperText: 'Gross income before tax'),
-                keyboardType: TextInputType.number,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d+\.?\d{0,2}')),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Current Monthly Income (Gross)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.attach_money),
+                ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Required';
-                  if (double.tryParse(value) == null) return 'Must be a number';
+                  final income = double.tryParse(value ?? '');
+                  if (income == null || income <= 0) {
+                    return 'Must enter a positive monthly income';
+                  }
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
+
+              // --- Employer Name ---
               TextFormField(
-                controller: _employerController,
-                decoration: const InputDecoration(labelText: 'Employer Name'),
-                validator: (value) => value == null || value.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _durationController,
-                decoration: const InputDecoration(labelText: 'Employment Duration (Years/Months)'),
-                validator: (value) => value == null || value.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: _handleNext,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
+                controller: _employerNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Employer Name',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.business),
                 ),
-                child: const Text('Next: Residence History'),
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 20),
+
+              // --- Employer Phone ---
+              TextFormField(
+                controller: _employerPhoneController,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  labelText: 'Employer Phone Number',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.phone),
+                ),
+                validator: (value) =>
+                    value == null || value.length < 8
+                        ? 'Valid phone required'
+                        : null,
+              ),
+              const SizedBox(height: 20),
+
+              // --- Employment Duration ---
+              TextFormField(
+                controller: _employmentDurationController,
+                decoration: const InputDecoration(
+                  labelText: 'How long have you been employed here?',
+                  hintText: 'e.g. 2 years, 6 months',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.timer),
+                ),
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Required' : null,
+              ),
+
+              const SizedBox(height: 40),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _handleBack,
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      child: const Text('Back'),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _handleNext,
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      child: const Text(
+                        'Next: Residence',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _incomeController.dispose();
-    _employerController.dispose();
-    _durationController.dispose();
-    super.dispose();
   }
 }

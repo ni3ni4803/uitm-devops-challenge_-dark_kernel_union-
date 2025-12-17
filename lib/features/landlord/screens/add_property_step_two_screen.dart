@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rentverse_mobile/features/landlord/state/property_creation_notifier.dart';
 
+
 // Mock list of common amenities
 const List<String> _mockAmenities = [
   'In-Unit Laundry',
@@ -25,8 +26,11 @@ class AddPropertyStepTwoScreen extends ConsumerStatefulWidget {
 
 class _AddPropertyStepTwoScreenState extends ConsumerState<AddPropertyStepTwoScreen> {
   final _formKey = GlobalKey<FormState>();
+  
+  // State variables to hold selections
   late int _selectedBedrooms;
-  late int _selectedBathrooms;
+  // Must be double to match the Notifier
+  late double _selectedBathrooms; 
   late List<String> _selectedAmenities;
 
   @override
@@ -34,7 +38,11 @@ class _AddPropertyStepTwoScreenState extends ConsumerState<AddPropertyStepTwoScr
     super.initState();
     // Initialize state with current data from the notifier
     final state = ref.read(propertyCreationNotifierProvider);
+    
+    // Use the value from state, defaulting to 1
     _selectedBedrooms = state.bedrooms;
+    
+    // Initialize bathrooms as double
     _selectedBathrooms = state.bathrooms;
     _selectedAmenities = List.from(state.amenities); // Use a copy
   }
@@ -42,11 +50,12 @@ class _AddPropertyStepTwoScreenState extends ConsumerState<AddPropertyStepTwoScr
   void _handleNext() {
     if (_formKey.currentState!.validate()) {
       // 1. Update the Riverpod state with current values
-      ref.read(propertyCreationNotifierProvider.notifier).updateDetailsAndLocation(
+      // 🚨 FIX: Using the CORRECT method name: updateDetailsAndLocation
+      ref.read(propertyCreationNotifierProvider.notifier).updateDetailsAndLocation( 
             bedrooms: _selectedBedrooms,
-            bathrooms: _selectedBathrooms,
+            bathrooms: _selectedBathrooms, 
             amenities: _selectedAmenities,
-            // Latitude/Longitude will be mocked/set to defaults for now
+            // Latitude/Longitude default values are handled by the notifier/model
           );
 
       // 2. Navigate to the next step (Step 3: Description & Media)
@@ -78,9 +87,9 @@ class _AddPropertyStepTwoScreenState extends ConsumerState<AddPropertyStepTwoScr
               ),
               const SizedBox(height: 20),
 
-              // --- Bedrooms Dropdown ---
+              // --- Bedrooms Dropdown (Int) ---
               DropdownButtonFormField<int>(
-                initialValue: _selectedBedrooms,
+                initialValue: _selectedBedrooms, 
                 decoration: const InputDecoration(
                   labelText: 'Bedrooms',
                   border: OutlineInputBorder(),
@@ -97,28 +106,31 @@ class _AddPropertyStepTwoScreenState extends ConsumerState<AddPropertyStepTwoScr
                     _selectedBedrooms = newValue ?? 1;
                   });
                 },
+                validator: (value) => value == null ? 'Please select a value' : null,
               ),
               const SizedBox(height: 20),
 
-              // --- Bathrooms Dropdown ---
-              DropdownButtonFormField<int>(
-                initialValue: _selectedBathrooms,
+              // --- Bathrooms Dropdown (Double) ---
+              DropdownButtonFormField<double>(
+                initialValue: _selectedBathrooms, 
                 decoration: const InputDecoration(
                   labelText: 'Bathrooms',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.bathtub),
                 ),
-                items: List.generate(4, (i) => i + 1) // 1 to 4
-                    .map((int value) => DropdownMenuItem<int>(
+                // Generate list of doubles (1.0, 1.5, 2.0, etc.)
+                items: [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
+                    .map((double value) => DropdownMenuItem<double>(
                           value: value,
-                          child: Text('$value Bathroom${value > 1 ? 's' : ''}'),
+                          child: Text(value.toString()),
                         ))
                     .toList(),
-                onChanged: (int? newValue) {
+                onChanged: (double? newValue) {
                   setState(() {
-                    _selectedBathrooms = newValue ?? 1;
+                    _selectedBathrooms = newValue ?? 1.0;
                   });
                 },
+                validator: (value) => value == null ? 'Please select a value' : null,
               ),
               const SizedBox(height: 40),
 

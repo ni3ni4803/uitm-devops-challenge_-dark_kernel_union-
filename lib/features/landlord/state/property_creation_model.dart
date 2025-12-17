@@ -7,14 +7,15 @@ part 'property_creation_model.freezed.dart';
 class PropertyCreationModel with _$PropertyCreationModel {
   const factory PropertyCreationModel({
     // Step 1: Basic Info
+    String? id,
     @Default('') String title,
     @Default('') String address,
-    @Default(0) double monthlyRent,
-    @Default(null) String? id,
+    @Default(0.0) double monthlyRent,
+   
     
     // Step 2: Details & Location
     @Default(1) int bedrooms,
-    @Default(1) int bathrooms,
+    @Default(1.0) double bathrooms,
     @Default([]) List<String> amenities,
     @Default(34.0) double latitude, // Defaulting to a central coordinate for mock purposes
     @Default(-118.0) double longitude,
@@ -24,3 +25,4 @@ class PropertyCreationModel with _$PropertyCreationModel {
     @Default([]) List<String> imageUrls, // Mocking URL list for now
   }) = _PropertyCreationModel;
 }
+

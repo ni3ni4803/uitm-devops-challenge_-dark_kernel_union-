@@ -9,27 +9,38 @@ part of 'rental_application.dart';
 _$RentalApplicationImpl _$$RentalApplicationImplFromJson(
         Map<String, dynamic> json) =>
     _$RentalApplicationImpl(
+      propertyId: json['propertyId'] as String,
       fullName: json['fullName'] as String? ?? '',
+      email: json['email'] as String? ?? '',
       phone: json['phone'] as String? ?? '',
+      driverLicenseNumber: json['driverLicenseNumber'] as String? ?? '',
       dateOfBirth: json['dateOfBirth'] as String? ?? '',
-      monthlyIncome: (json['monthlyIncome'] as num?)?.toDouble() ?? 0,
+      currentMonthlyIncome:
+          (json['currentMonthlyIncome'] as num?)?.toDouble() ?? 0,
       employerName: json['employerName'] as String? ?? '',
+      employerPhone: json['employerPhone'] as String? ?? '',
       employmentDuration: json['employmentDuration'] as String? ?? '',
       currentAddress: json['currentAddress'] as String? ?? '',
-      currentLandlordContact: json['currentLandlordContact'] as String? ?? '',
-      propertyId: json['propertyId'] as String,
+      currentLandlordName: json['currentLandlordName'] as String? ?? '',
+      currentLandlordPhone: json['currentLandlordPhone'] as String? ?? '',
+      isSubmitted: json['isSubmitted'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$RentalApplicationImplToJson(
         _$RentalApplicationImpl instance) =>
     <String, dynamic>{
+      'propertyId': instance.propertyId,
       'fullName': instance.fullName,
+      'email': instance.email,
       'phone': instance.phone,
+      'driverLicenseNumber': instance.driverLicenseNumber,
       'dateOfBirth': instance.dateOfBirth,
-      'monthlyIncome': instance.monthlyIncome,
+      'currentMonthlyIncome': instance.currentMonthlyIncome,
       'employerName': instance.employerName,
+      'employerPhone': instance.employerPhone,
       'employmentDuration': instance.employmentDuration,
       'currentAddress': instance.currentAddress,
-      'currentLandlordContact': instance.currentLandlordContact,
-      'propertyId': instance.propertyId,
+      'currentLandlordName': instance.currentLandlordName,
+      'currentLandlordPhone': instance.currentLandlordPhone,
+      'isSubmitted': instance.isSubmitted,
     };
