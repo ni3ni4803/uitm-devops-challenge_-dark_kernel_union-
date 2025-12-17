@@ -1,2 +1,8 @@
 ignoredBuiltDependencies:
+  - '@prisma/engines'
+  - '@scarf/scarf'
   - puppeteer
+
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - prisma
